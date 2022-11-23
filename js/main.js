@@ -1,5 +1,8 @@
 'use strict'
 
+const MINE = '💣'
+const FLAG = '🚩'
+
 const gGame = {
     isOn: false,
     shownCount: 0,
@@ -16,7 +19,7 @@ let gBoard
 
 function onInitGame() {
     gBoard = buildBoard()
-    plantMines(2 ,gBoard)
+    plantMines(2, gBoard)
     setMinesAroundCount(gBoard)
     renderBoard(gBoard)
 }
@@ -53,9 +56,10 @@ function makeCell() {
 
 function plantMines(minesAmount, board) {
     const emptyCells = getEmptyCells(board)
-    for (let i = 0; i <= minesAmount; i++) {
-        const randomIdX = getRandomInt(0, board.length)
+    for (let i = 0; i < minesAmount; i++) {
+        const randomIdX = getRandomInt(0, emptyCells.length)
         const location = emptyCells[randomIdX]
+        console.log(location)
         gBoard[location.i][location.j].isMine = true
     }
 }
@@ -96,9 +100,15 @@ function getEmptyCells(board) {
 
 function renderCell(i, j) {
     const cell = gBoard[i][j]
-    const content = cell.isShown ? cell.minesAroundCount : ''
+    const { isMarked, isMine, isShown, minesAroundCount } = cell
+    let content = ''
+    if (isShown) {
+        if (isMine) content = MINE
+        else if (isMarked) content = FLAG
+        else content = minesAroundCount
+    }
     const elCell = document.querySelector(`.cell-${i}-${j}`)
-    elCell.innerHTML = `<span data-${i}-${j} class="cell-${content}">${content}, ${cell.isMine}</span>`
+    elCell.innerHTML = `<span>${content}</span>`
 }
 
 function renderBoard(board) {
