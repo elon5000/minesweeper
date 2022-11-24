@@ -7,12 +7,24 @@
     <title>Minesweeper</title>
     <link rel="stylesheet" href="css/main.css">
 </head>
-<body class="full-layout" onload="onInitGame()">
+<body class="flex column full-layout" onload="onInitGame()">
+    <section class="flex column fixed hidden main-layout message-modal">
+        <button class="absolute close-modal-btn" onclick="onShowModal()">✕</button>
+        <h3 class="message">Helooo</h3>
+    </section>
+    <section class="flex column stats-container">
+        <div class="life-container">
+            Life : <span class="life-counter"></span>
+        </div>
+    </section>
     <main class="flex column">
         <table class="flex column main-layout">
-            <tbody class="flex column game-board"></tbody>
+            <tbody oncontextmenu="return false" class="flex column game-board"></tbody>
         </table>
     </main>
+    <footer class="flex column">
+        <h3>Cofferights Elon Barzani 2022©</h3>
+    </footer>
     <script src="js/util.js"></script>
     <script src="js/main.js"></script>
 </body>

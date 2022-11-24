@@ -1,4 +1,3 @@
-
 .flex {
     display: flex;
 }
@@ -11,12 +10,44 @@
     flex-direction: row;
 }
 
+.relative {
+    position: relative;
+}
+
+.absolute {
+    position: absolute;
+}
+
+.fixed {
+    position: fixed;
+}
+
 .full-layout {
     width: 100vw;
 }
 
 .main-layout {
     width: 90vw;
+}
+
+.hidden {
+    display: none;
+}
+
+.green {
+    color: green;
+}
+
+.blue {
+    color: blue;
+}
+
+.orange {
+    color: orange;
+}
+
+.red {
+    color: red;
 }
 
 * {
@@ -30,6 +61,41 @@
 body {
     height: 100vh;
     background: rgb(193, 216, 224);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.message-modal {
+    top: 50%;
+    left: 50%;
+    height: 40vh;
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    background: lightgreen;
+    border: 4px solid black;
+    transform: translate(-50%, -50%);
+}
+
+.close-modal-btn {
+    top: 1vh;
+    right: 4vw;
+    border: none;
+    cursor: pointer;
+    font-size: 2rem;
+    background: none;
+}
+
+.close-modal-btn:hover {
+    transform: scale(1.05);
+}
+
+.close-modal-btn:active {
+    transform: scale(0.95);
+}
+
+.message {
+    text-align: center;
+    height: fit-content;
 }
 
 main {
@@ -52,6 +118,7 @@ table:hover {
 
 tbody {
     flex: 1;
+    user-select: none;
 }
 
 tr {
@@ -61,13 +128,13 @@ tr {
 td {
     flex: 1;
     cursor: pointer;
+    font-weight: 600;
     background: lightgrey;
     border: 2px solid black;
 }
 
 td:hover {
     background: rgb(174, 174, 174);
-    transform: scale(1.02);
 }
 
 td:active {
@@ -75,5 +142,10 @@ td:active {
 }
 
 .cell {
+    justify-content: center;
+}
+
+footer {
+    align-items: center;
     justify-content: center;
 }
