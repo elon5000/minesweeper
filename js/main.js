@@ -42,9 +42,11 @@ function onCellClicked(i, j) {
 
 function onLeftClick(ev, i, j) {
     ev.preventDefault()
-    gBoard[i][j].isShown = !gBoard[i][j].isShown
-    gBoard[i][j].isMarked = !gBoard[i][j].isMarked
+    const cell = gBoard[i][j]
+    if (cell.isShown) return
+    cell.isMarked = !gBoard[i][j].isMarked
     renderCell(i, j)
+    console.log(cell)
     if (checkWin(gBoard)) onWin()
 }
 
@@ -131,23 +133,26 @@ function checkWin(board) {
         for (let j = 0; j < board[i].length; j++) {
             const cell = board[i][j]
             const { isMarked, isMine, isShown } = cell
-            if (!isMine && !isShown) return false
-            else if (isMine && (!isShown || !isMarked)) return false
+            if (!isShown) {
+                if (!isMine) return false
+                else if (isMine && !isMarked) return false
+            }
         }
     }
     return true
 }
 
 function checkNeighbors(board, rowIdx, colIdx) {
+    if (gBoard[rowIdx][colIdx].isShown) return
+    console.log('Checking cell', rowIdx, colIdx)
+    gBoard[rowIdx][colIdx].isShown = true
     for (let i = rowIdx - 1; i <= rowIdx + 1; i++) {
         for (let j = colIdx - 1; j <= colIdx + 1; j++) {
             if (i < 0 || i >= board.length || j < 0 || j >= board[i].length || (i === rowIdx && j === colIdx)) continue
             const cell = board[i][j]
-            if (cell.minesAroundCount === 0 && !cell.isShown) {
-                board[i][j].isShown = true
-                renderCell(i, j)
-                checkNeighbors(board, i, j)
-            }
+            if (cell.minesAroundCount === 0) checkNeighbors(board, i, j)
+            else cell.isShown = true
+            renderCell(i, j)
         }
     }
 }
@@ -156,6 +161,7 @@ function setMinesAroundCount(board) {
     for (let i = 0; i < board.length; i++) {
         for (let j = 0; j < board[i].length; j++) {
             const cell = board[i][j]
+            if (cell.isMine) continue
             cell.minesAroundCount = getNeigCount(i, j, board)
         }
     }
@@ -199,16 +205,14 @@ function renderCell(i, j) {
     const { isMarked, isMine, isShown, minesAroundCount } = cell
     let content = ''
     let className = ''
-    if (isShown) {
-        if (isMine && !isMarked) content = MINE
-        else if (isMarked) content = FLAG
-        else {
-            content = minesAroundCount
-            if (minesAroundCount === 0) className = 'green'
-            else if (minesAroundCount === 1) className = 'blue'
-            else if (minesAroundCount === 2) className = 'orange'
-            else className = 'red'
-        }
+    if (isShown && isMine) content = MINE
+    else if (isMarked) content = FLAG
+    else if (isShown) {
+        content = minesAroundCount
+        if (minesAroundCount === 0) className = 'green'
+        else if (minesAroundCount === 1) className = 'blue'
+        else if (minesAroundCount === 2) className = 'orange'
+        else className = 'red'
     }
     const elCell = document.querySelector(`.cell-${i}-${j}`)
     elCell.innerHTML = `<span class="${className}">${content}</span>`
@@ -223,16 +227,14 @@ function renderBoard(board) {
             const { isMarked, isMine, isShown, minesAroundCount } = cell
             let content = ''
             let className = ''
-            if (isShown) {
-                if (isMine && !isMarked) content = MINE
-                else if (isMarked) content = FLAG
-                else {
-                    content = minesAroundCount
-                    if (minesAroundCount === 0) className = 'green'
-                    else if (minesAroundCount === 1) className = 'blue'
-                    else if (minesAroundCount === 2) className = 'orange'
-                    else className = 'red'
-                }
+            if (isShown && isMine) content = MINE
+            else if (isMarked) content = FLAG
+            else if (isShown) {
+                content = minesAroundCount
+                if (minesAroundCount === 0) className = 'green'
+                else if (minesAroundCount === 1) className = 'blue'
+                else if (minesAroundCount === 2) className = 'orange'
+                else className = 'red'
             }
             strHTML += `<td onclick="onCellClicked(${i},${j})" oncontextmenu="onLeftClick(event, ${i},${j})" class="flex column cell cell-${i}-${j}">
             <span class="${className}">${content}</span>
