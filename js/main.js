@@ -29,11 +29,14 @@ const gLevels = [
     { name: 'Hard', size: 8, mines: 8, life: 2, hint: 1 }
 ]
 
+const gMineLocs = []
+
 let gScores = loadFromLocalStorage(STORAGE_KEY) || [{ scorePoints: 200, levelName: 'Easy', playerName: 'Elon' }]
 
 let gBoard
 let gLevel = gLevels[0]
 let gIsHintMode = false
+let gIsPlaceMinesMode = false
 let gTime
 let gTimerInterval
 
@@ -41,6 +44,7 @@ let gTimerInterval
 function onInitGame() {
     gGame.isOn = false
     if (gTimerInterval) stopTimer()
+    resetMines(gMineLocs)
     setPlayer()
     gBoard = buildBoard(gLevel.size)
     renderBoard(gBoard)
@@ -56,6 +60,7 @@ function onReset() {
 }
 
 function onCellClicked(i, j) {
+    if (gIsPlaceMinesMode) return placeMine(i, j)
     if (!gGame.isOn) onFirstClick(i, j)
     const cell = gBoard[i][j]
     if (cell.isShown) return
@@ -69,6 +74,7 @@ function onCellClicked(i, j) {
 
 function onMark(ev, i, j) {
     ev.preventDefault()
+    if (!gGame.isOn) return
     const cell = gBoard[i][j]
     if (cell.isShown) return
     cell.isMarked = !gBoard[i][j].isMarked
@@ -77,7 +83,7 @@ function onMark(ev, i, j) {
 }
 
 function onFirstClick(i, j) {
-    plantMines({ i, j }, gLevel.mines, gBoard)
+    if (!gMineLocs.length) plantMines({ i, j }, gLevel.mines, gBoard)
     setMinesAroundCount(gBoard)
     renderBoard(gBoard)
     setGameIsOn(true)
@@ -100,6 +106,11 @@ function onHint() {
     if (gPlayer.hint <= 0) return
     gIsHintMode = gIsHintMode ? false : true
     toggleHintMode()
+}
+
+function onTogglePlaceMinesMode() {
+    if (gGame.isOn) return
+    gIsPlaceMinesMode = !gIsPlaceMinesMode
 }
 
 function onWin() {
@@ -191,6 +202,7 @@ function plantMines(firstClickLoc, minesAmount, board) {
     for (let i = 0; i < minesAmount; i++) {
         const randomIdX = getRandomInt(0, emptyCells.length)
         const location = emptyCells.splice(randomIdX, 1)[0]
+        gMineLocs.push(location)
         gBoard[location.i][location.j].isMine = true
     }
 }
@@ -240,6 +252,15 @@ function runTimer() {
 
 function stopTimer() {
     clearInterval(gTimerInterval)
+}
+
+function resetMines(mines) {
+    mines.splice(0 , mines.length)
+}
+
+function placeMine(i, j) {
+    gBoard[i][j].isMine = true
+    gMineLocs.push({i, j})
 }
 
 function calcScorePoints(time, cellCount, life, hintCount) {
