@@ -57,9 +57,9 @@ function onReset() {
 
 function onCellClicked(i, j) {
     if (!gGame.isOn) onFirstClick(i, j)
-    if (gIsHintMode) return revealCellNeigh(i, j)
     const cell = gBoard[i][j]
     if (cell.isShown) return
+    if (gIsHintMode) return revealCellNeigh(i, j)
     if (cell.isMine) onMine()
     else if (cell.minesAroundCount === 0) checkNeighbors(gBoard, i, j)
     cell.isShown = true
@@ -137,6 +137,20 @@ function onShowModal(isOpen = false, message = '') {
 function onSetLevel(idx) {
     gLevel = gLevels[idx]
     onInitGame()
+}
+
+function onSafeClick() {
+    if (!gGame.isOn) return
+    const pos = getSafeCellPos(gBoard)
+    if (!pos) return
+    const {i, j} = pos
+    let safeClickInterval = setInterval(()=> {
+        gBoard[i][j].isShown = !gBoard[i][j].isShown
+        renderCell(i, j) 
+    },300)
+    setTimeout(()=> {
+        clearInterval(safeClickInterval)
+    },3000)
 }
 
 function buildBoard(size = 4) {
@@ -306,6 +320,17 @@ function getEmptyCells(board) {
         }
     }
     return emptyCells
+}
+
+function getSafeCellPos(board) {
+    const safeCell = []
+    for (let i = 0; i < board.length; i++) {
+        for (let j = 0; j < board[i].length; j++) {
+            const cell = gBoard[i][j]
+            if (!cell.isMine && !cell.isMarked && !cell.isShown) safeCell.push({i, j})
+        }
+    }
+    return safeCell[getRandomInt(0, safeCell.length)]
 }
 
 function renderCell(i, j) {
