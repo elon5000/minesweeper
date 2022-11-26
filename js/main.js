@@ -7,6 +7,8 @@ const HINT = '💡'
 const SMILEY_DEFAULT = '🙂'
 const SMILEY_LOSE = '🤯'
 const SMILEY_WIN = '😍'
+const STORAGE_KEY = 'score_db'
+
 
 const gGame = {
     isOn: false,
@@ -22,26 +24,29 @@ let gPlayer = {
 }
 
 const gLevels = [
-    { size: 4, mines: 2, life: 2, hint: 3 },
-    { size: 6, mines: 3, life: 2, hint: 2 },
-    { size: 8, mines: 8, life: 2, hint: 1 }
+    { name: 'Easy', size: 4, mines: 2, life: 2, hint: 3 },
+    { name: 'Advenced', size: 6, mines: 3, life: 2, hint: 2 },
+    { name: 'Hard', size: 8, mines: 8, life: 2, hint: 1 }
 ]
+
+let gScores = loadFromLocalStorage(STORAGE_KEY) || [{ scorePoints: 200, levelName: 'Easy', playerName: 'Elon' }]
 
 let gBoard
 let gLevel = gLevels[0]
 let gIsHintMode = false
-let gTime = '0:00'
+let gTime
 let gTimerInterval
 
 
 function onInitGame() {
     gGame.isOn = false
+    if (gTimerInterval) stopTimer()
     setPlayer()
     gBoard = buildBoard(gLevel.size)
     renderBoard(gBoard)
     renderLife()
     renderHints()
-    renderTimer(gTime)
+    renderTimer('0:00')
     renderSmiley(SMILEY_DEFAULT)
 }
 
@@ -62,7 +67,7 @@ function onCellClicked(i, j) {
     if (checkWin(gBoard)) return onWin()
 }
 
-function onLeftClick(ev, i, j) {
+function onMark(ev, i, j) {
     ev.preventDefault()
     const cell = gBoard[i][j]
     if (cell.isShown) return
@@ -77,6 +82,12 @@ function onFirstClick(i, j) {
     renderBoard(gBoard)
     setGameIsOn(true)
     runTimer()
+}
+
+function onToggleScoresModal() {
+    const elScoresModal = document.querySelector('.scores-modal-warpper')
+    if (elScoresModal.classList.contains('hidden')) renderScores(gScores)
+    elScoresModal.classList.toggle('hidden')
 }
 
 function onMine() {
@@ -97,8 +108,12 @@ function onWin() {
     stopTimer()
     renderSmiley(SMILEY_WIN)
     revealAllMines(gBoard)
+    const scorePoints = calcScorePoints(gTime, gBoard.length ** 2, gPlayer.life, gPlayer.hint)
     setTimeout(() => {
-        onShowModal(true, 'You win')
+        const score = makeScore(scorePoints, gLevel.name)
+        gScores.push(score)
+        onShowModal(true, `Victory! your score is ${scorePoints}`)
+        saveToLocalSorage(gScores, STORAGE_KEY)
     }, 1000)
 }
 
@@ -141,6 +156,14 @@ function makeCell() {
         isShown: false,
         isMine: false,
         isMarked: false
+    }
+}
+
+function makeScore(scorePoints, levelName) {
+    return {
+        scorePoints,
+        levelName,
+        playerName: prompt('Enter your name')
     }
 }
 
@@ -194,14 +217,19 @@ function toggleHintMode() {
 
 function runTimer() {
     const startTime = Date.now()
-    gTimerInterval = setInterval(()=> {
+    gTimerInterval = setInterval(() => {
         const time = (Date.now() - startTime) / 1000
-        renderTimer(time.toFixed(3))
+        gTime = time
+        renderTimer(time.toFixed(2))
     }, 100)
 }
 
 function stopTimer() {
-    if (gTimerInterval) clearInterval(gTimerInterval)
+    clearInterval(gTimerInterval)
+}
+
+function calcScorePoints(time, cellCount, life, hintCount) {
+    return Math.floor((cellCount + (life * 2) + (hintCount * 3)) / time * 100)
 }
 
 function checkWin(board) {
@@ -316,7 +344,7 @@ function renderBoard(board) {
                 else if (minesAroundCount === 2) className = 'orange'
                 else className = 'red'
             }
-            strHTML += `<td onclick="onCellClicked(${i},${j})" oncontextmenu="onLeftClick(event, ${i},${j})" class="flex column cell cell-${i}-${j}">
+            strHTML += `<td onclick="onCellClicked(${i},${j})" oncontextmenu="onMark(event, ${i},${j})" class="flex column cell cell-${i}-${j}">
             <span class="${className}">${content}</span>
             </td>`
         }
@@ -349,6 +377,28 @@ function renderHints() {
 }
 
 function renderTimer(time) {
-    const elTimer = document.querySelector('.timer') 
-        elTimer.innerText = time
+    const elTimer = document.querySelector('.timer')
+    elTimer.innerText = time
+}
+
+function renderScores(scores) {
+    const elScores = document.querySelector('.scores')
+    let strHTML = ''
+    for (let i = 0; i < scores.length; i++) {
+        const score = scores[i]
+        strHTML += `<li class="flex row scre">
+    <span>${score.playerName}</span>
+    <span>${score.levelName}</span>
+    <span>${score.scorePoints}</span>
+    </li>`
+    }
+    elScores.innerHTML = strHTML
+}
+
+function saveToLocalSorage(entity, key) {
+    localStorage.setItem(key, JSON.stringify(entity))
+}
+
+function loadFromLocalStorage(key) {
+    return JSON.parse(localStorage.getItem(key))
 }
