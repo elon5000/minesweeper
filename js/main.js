@@ -173,6 +173,10 @@ function onUndo() {
     renderBoard(gBoard)
 }
 
+function onToggleDarkMode() {
+    document.querySelector('body').classList.toggle('darkmode')
+}
+
 function buildBoard(size = 4) {
     const board = []
     for (let i = 0; i < size; i++) {
@@ -310,6 +314,19 @@ function setMinesAroundCount(board) {
             const cell = board[i][j]
             if (cell.isMine) continue
             cell.minesAroundCount = getNeigCount(i, j, board)
+        }
+    }
+}
+
+function onSetSevenBoomModeMines() {
+    let idx = 0
+    for (let i = 0; i < gBoard.length; i++) {
+        for (let j = 0; j < gBoard[i].length; j++) {
+            idx++
+            if (idx % 7 === 0) {
+                gBoard[i][j].isMine = true
+                gMineLocs.push({i, j})
+            }
         }
     }
 }

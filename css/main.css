@@ -54,6 +54,10 @@
     cursor: help;
 }
 
+.darkmode {
+    background: rgb(56, 70, 74);
+}
+
 * {
     margin: 0;
     padding: 0;
