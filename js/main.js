@@ -17,12 +17,6 @@ const gGame = {
     secsPassed: 0
 }
 
-let gPlayer = {
-    life: 2,
-    hint: 3,
-    score: 0
-}
-
 const gLevels = [
     { name: 'Easy', size: 4, mines: 2, life: 2, hint: 3 },
     { name: 'Advenced', size: 6, mines: 3, life: 2, hint: 2 },
@@ -30,6 +24,14 @@ const gLevels = [
 ]
 
 const gMineLocs = []
+
+const gBoardsHistory = []
+
+let gPlayer = {
+    life: 2,
+    hint: 3,
+    score: 0
+}
 
 let gScores = loadFromLocalStorage(STORAGE_KEY) || [{ scorePoints: 200, levelName: 'Easy', playerName: 'Elon' }]
 
@@ -62,6 +64,7 @@ function onReset() {
 function onCellClicked(i, j) {
     if (gIsPlaceMinesMode) return placeMine(i, j)
     if (!gGame.isOn) onFirstClick(i, j)
+    gBoardsHistory.push(getCopiedMat(gBoard))
     const cell = gBoard[i][j]
     if (cell.isShown) return
     if (gIsHintMode) return revealCellNeigh(i, j)
@@ -75,6 +78,7 @@ function onCellClicked(i, j) {
 function onMark(ev, i, j) {
     ev.preventDefault()
     if (!gGame.isOn) return
+    gBoardsHistory.push(getCopiedMat(gBoard))
     const cell = gBoard[i][j]
     if (cell.isShown) return
     cell.isMarked = !gBoard[i][j].isMarked
@@ -83,7 +87,7 @@ function onMark(ev, i, j) {
 }
 
 function onFirstClick(i, j) {
-    if (!gMineLocs.length) plantMines({ i, j }, gLevel.mines, gBoard)
+    if (!gMineLocs.length) randomlyPlaceMines({ i, j }, gLevel.mines, gBoard)
     setMinesAroundCount(gBoard)
     renderBoard(gBoard)
     setGameIsOn(true)
@@ -154,14 +158,19 @@ function onSafeClick() {
     if (!gGame.isOn) return
     const pos = getSafeCellPos(gBoard)
     if (!pos) return
-    const {i, j} = pos
-    let safeClickInterval = setInterval(()=> {
+    const { i, j } = pos
+    let safeClickInterval = setInterval(() => {
         gBoard[i][j].isShown = !gBoard[i][j].isShown
-        renderCell(i, j) 
-    },300)
-    setTimeout(()=> {
+        renderCell(i, j)
+    }, 300)
+    setTimeout(() => {
         clearInterval(safeClickInterval)
-    },3000)
+    }, 3000)
+}
+
+function onUndo() {
+    gBoard = gBoardsHistory.pop()
+    renderBoard(gBoard)
 }
 
 function buildBoard(size = 4) {
@@ -192,7 +201,7 @@ function makeScore(scorePoints, levelName) {
     }
 }
 
-function plantMines(firstClickLoc, minesAmount, board) {
+function randomlyPlaceMines(firstClickLoc, minesAmount, board) {
     const emptyCells = getEmptyCells(board)
     for (let i = 0; i < emptyCells.length; i++) {
         const emptyCellLoc = emptyCells[i]
@@ -255,12 +264,12 @@ function stopTimer() {
 }
 
 function resetMines(mines) {
-    mines.splice(0 , mines.length)
+    mines.splice(0, mines.length)
 }
 
 function placeMine(i, j) {
     gBoard[i][j].isMine = true
-    gMineLocs.push({i, j})
+    gMineLocs.push({ i, j })
 }
 
 function calcScorePoints(time, cellCount, life, hintCount) {
@@ -348,7 +357,7 @@ function getSafeCellPos(board) {
     for (let i = 0; i < board.length; i++) {
         for (let j = 0; j < board[i].length; j++) {
             const cell = gBoard[i][j]
-            if (!cell.isMine && !cell.isMarked && !cell.isShown) safeCell.push({i, j})
+            if (!cell.isMine && !cell.isMarked && !cell.isShown) safeCell.push({ i, j })
         }
     }
     return safeCell[getRandomInt(0, safeCell.length)]
