@@ -3,6 +3,10 @@
 const MINE = '💣'
 const FLAG = '🚩'
 const LIFE = '💘'
+const HINT = '💡'
+const SMILEY_DEFAULT = '🙂'
+const SMILEY_LOSE = '🤯'
+const SMILEY_WIN = '😍'
 
 const gGame = {
     isOn: false,
@@ -11,31 +15,49 @@ const gGame = {
     secsPassed: 0
 }
 
-const gLevel = {
-    size: 4,
-    mines: 2
+let gPlayer = {
+    life: 2,
+    hint: 3,
+    score: 0
 }
 
-const gPlayer = {
-    life: 2
-}
+const gLevels = [
+    { size: 4, mines: 2, life: 2, hint: 3 },
+    { size: 6, mines: 3, life: 2, hint: 2 },
+    { size: 8, mines: 8, life: 2, hint: 1 }
+]
 
 let gBoard
+let gLevel = gLevels[0]
+let gIsHintMode = false
+let gTime = '0:00'
+let gTimerInterval
+
 
 function onInitGame() {
-    gBoard = buildBoard()
+    gGame.isOn = false
+    setPlayer()
+    gBoard = buildBoard(gLevel.size)
     renderBoard(gBoard)
     renderLife()
+    renderHints()
+    renderTimer(gTime)
+    renderSmiley(SMILEY_DEFAULT)
+}
+
+function onReset() {
+    onInitGame()
+    onShowModal()
 }
 
 function onCellClicked(i, j) {
     if (!gGame.isOn) onFirstClick(i, j)
-    if (gBoard[i][j].isShown) return
-    else if (gBoard[i][j].isMine) onMine()
-    else if (gBoard[i][j].minesAroundCount === 0) {
-        checkNeighbors(gBoard, i, j)
-    }
-    gBoard[i][j].isShown = true
+    if (gIsHintMode) return revealCellNeigh(i, j)
+    const cell = gBoard[i][j]
+    if (cell.isShown) return
+    if (cell.isMine) onMine()
+    else if (cell.minesAroundCount === 0) checkNeighbors(gBoard, i, j)
+    cell.isShown = true
     renderCell(i, j)
     if (checkWin(gBoard)) return onWin()
 }
@@ -46,32 +68,45 @@ function onLeftClick(ev, i, j) {
     if (cell.isShown) return
     cell.isMarked = !gBoard[i][j].isMarked
     renderCell(i, j)
-    console.log(cell)
     if (checkWin(gBoard)) onWin()
 }
 
 function onFirstClick(i, j) {
-    plantMines({ i, j }, 2, gBoard)
+    plantMines({ i, j }, gLevel.mines, gBoard)
     setMinesAroundCount(gBoard)
     renderBoard(gBoard)
     setGameIsOn(true)
+    runTimer()
 }
 
 function onMine() {
-    setLife(gPlayer.life - 1)
+    gPlayer.life--
     renderLife()
     if (gPlayer.life <= 0) return onLose()
 }
 
+function onHint() {
+    if (gPlayer.hint <= 0) return
+    gIsHintMode = gIsHintMode ? false : true
+    toggleHintMode()
+}
+
 function onWin() {
-    showAllCells(gBoard)
+    if (!gGame.isOn) return
+    gGame.isOn = false
+    stopTimer()
+    renderSmiley(SMILEY_WIN)
+    revealAllMines(gBoard)
     setTimeout(() => {
         onShowModal(true, 'You win')
     }, 1000)
 }
 
 function onLose() {
-    showAllCells(gBoard)
+    gGame.isOn = false
+    stopTimer()
+    renderSmiley(SMILEY_LOSE)
+    revealAllMines(gBoard)
     setTimeout(() => {
         onShowModal(true, 'You lost')
     }, 1000)
@@ -82,6 +117,11 @@ function onShowModal(isOpen = false, message = '') {
     const elMessage = elModal.querySelector('.message')
     elMessage.innerText = message
     isOpen ? elModal.classList.remove('hidden') : elModal.classList.add('hidden')
+}
+
+function onSetLevel(idx) {
+    gLevel = gLevels[idx]
+    onInitGame()
 }
 
 function buildBoard(size = 4) {
@@ -118,14 +158,50 @@ function plantMines(firstClickLoc, minesAmount, board) {
     }
 }
 
-function showAllCells(board) {
+function revealAllMines(board) {
     for (let i = 0; i < board.length; i++) {
         for (let j = 0; j < board[i].length; j++) {
             const cell = board[i][j]
-            if (!cell.isShown) cell.isShown = true
+            if (cell.isMine && !cell.isShown) cell.isShown = true
         }
     }
     renderBoard(board)
+}
+
+function revealCellNeigh(rowIdx, colIdx) {
+    for (let i = rowIdx - 1; i <= rowIdx + 1; i++) {
+        if (i < 0 || i > gBoard.length - 1) continue
+        for (let j = colIdx - 1; j <= colIdx + 1; j++) {
+            if (j < 0 || j > gBoard[i].length - 1) continue
+            const cell = gBoard[i][j]
+            cell.isShown = true
+            renderCell(i, j)
+            setTimeout(() => {
+                cell.isShown = false
+                renderCell(i, j)
+            }, 2000)
+        }
+    }
+    gIsHintMode = false
+    gPlayer.hint--
+    renderHints()
+}
+
+function toggleHintMode() {
+    const elBody = document.querySelector('body')
+    elBody.classList.toggle('hint-mode')
+}
+
+function runTimer() {
+    const startTime = Date.now()
+    gTimerInterval = setInterval(()=> {
+        const time = (Date.now() - startTime) / 1000
+        renderTimer(time.toFixed(3))
+    }, 100)
+}
+
+function stopTimer() {
+    if (gTimerInterval) clearInterval(gTimerInterval)
 }
 
 function checkWin(board) {
@@ -144,7 +220,6 @@ function checkWin(board) {
 
 function checkNeighbors(board, rowIdx, colIdx) {
     if (gBoard[rowIdx][colIdx].isShown) return
-    console.log('Checking cell', rowIdx, colIdx)
     gBoard[rowIdx][colIdx].isShown = true
     for (let i = rowIdx - 1; i <= rowIdx + 1; i++) {
         for (let j = colIdx - 1; j <= colIdx + 1; j++) {
@@ -171,16 +246,21 @@ function setGameIsOn(isOn) {
     gGame.isOn = isOn
 }
 
-function setLife(value) {
-    gPlayer.life = value
+function setPlayer() {
+    gPlayer = {
+        life: 2,
+        hint: 3,
+        score: 0
+    }
 }
 
-function getNeigCount(rowIdxi, colIdx, board) {
+function getNeigCount(rowIdx, colIdx, board) {
     let count = 0
-    for (let i = rowIdxi - 1; i <= rowIdxi + 1; i++) {
+    for (let i = rowIdx - 1; i <= rowIdx + 1; i++) {
         if (i < 0 || i > board.length - 1) continue
         for (let j = colIdx - 1; j <= colIdx + 1; j++) {
             if (j < 0 || j > board[i].length - 1) continue
+            if (i === rowIdx && j === colIdx) continue
             const cell = board[i][j]
             if (cell.isMine) count++
         }
@@ -252,4 +332,23 @@ function renderLife() {
         strHTML += LIFE
     }
     elLifeCounter.innerText = strHTML
+}
+
+function renderSmiley(str) {
+    const elSmiley = document.querySelector('.smiley')
+    elSmiley.innerText = str
+}
+
+function renderHints() {
+    const elHints = document.querySelector('.hints')
+    let strHTML = ''
+    for (let i = gPlayer.hint; i > 0; i--) {
+        strHTML += `<li class="hint" onclick="onHint()">${HINT}</li>`
+    }
+    elHints.innerHTML = strHTML
+}
+
+function renderTimer(time) {
+    const elTimer = document.querySelector('.timer') 
+        elTimer.innerText = time
 }

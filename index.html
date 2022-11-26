@@ -8,18 +8,35 @@
     <link rel="stylesheet" href="css/main.css">
 </head>
 <body class="flex column full-layout" onload="onInitGame()">
-    <section class="flex column fixed hidden main-layout message-modal">
+    <section class="flex column fixed main-layout hidden message-modal">
         <button class="absolute close-modal-btn" onclick="onShowModal()">✕</button>
-        <h3 class="message">Helooo</h3>
+        <h3 class="message"></h3>
+        <button class="reset-btn" onclick="onReset()">(Reset)</button>
     </section>
     <section class="flex column stats-container">
         <div class="life-container">
             Life : <span class="life-counter"></span>
         </div>
     </section>
+    <section class="flex row main-layout level-picker-container">
+        <button onclick="onSetLevel(0)" class="level-picker-btn">Easy</button>
+        <button onclick="onSetLevel(1)" class="level-picker-btn">Medium</button>
+        <button onclick="onSetLevel(2)" class="level-picker-btn">Hard</button>
+    </section>
+    <section class="features-btns-containr">
+        <div class="hints-container">
+            <ul class="flex row  hints"></ul>
+        </div>
+    </section>
     <main class="flex column">
+        <div class="flex column smiley-container">
+            <h3 class="smiley" onclick="onReset()"></h3>
+        </div>
+        <div class="flex column timer-container">
+            <h3 class="timer"></h3>
+        </div>
         <table class="flex column main-layout">
-            <tbody oncontextmenu="return false" class="flex column game-board"></tbody>
+            <tbody class="flex column game-board"></tbody>
         </table>
     </main>
     <footer class="flex column">
