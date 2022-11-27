@@ -100,10 +100,24 @@ function onFirstClick(i, j) {
     runTimer()
 }
 
+function onTogglePlaceMinesMode() {
+    if (gGame.isOn) return
+    gIsPlaceMinesMode = !gIsPlaceMinesMode
+}
+
 function onToggleScoresModal() {
     const elScoresModal = document.querySelector('.scores-modal-warpper')
     if (elScoresModal.classList.contains('hidden')) renderScores(gScores)
     elScoresModal.classList.toggle('hidden')
+}
+
+function onToggleDarkMode() {
+    document.querySelector('body').classList.toggle('darkmode')
+}
+
+function onToggleMegaHintMode() {
+    if (!gMegaHint) return
+    gIsMegaHintMode = !gIsMegaHintMode
 }
 
 function onMine() {
@@ -116,11 +130,6 @@ function onHint() {
     if (gPlayer.hint <= 0) return
     gIsHintMode = gIsHintMode ? false : true
     toggleHintMode()
-}
-
-function onTogglePlaceMinesMode() {
-    if (gGame.isOn) return
-    gIsPlaceMinesMode = !gIsPlaceMinesMode
 }
 
 function onShowModal(isOpen = false, message = '') {
@@ -152,14 +161,6 @@ function onSafeClick() {
 function onUndo() {
     gBoard = gBoardsHistory.pop()
     renderBoard(gBoard)
-}
-
-function onToggleDarkMode() {
-    document.querySelector('body').classList.toggle('darkmode')
-}
-
-function onToggleMegaHintMode() {
-    gIsMegaHintMode = !gIsMegaHintMode
 }
 
 function onWin() {
