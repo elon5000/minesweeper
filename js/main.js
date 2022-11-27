@@ -8,6 +8,7 @@ const SMILEY_DEFAULT = '🙂'
 const SMILEY_LOSE = '🤯'
 const SMILEY_WIN = '😍'
 const STORAGE_KEY = 'score_db'
+const MINE_EXTERMINATOR_AMOUNT = 3
 
 
 const gGame = {
@@ -49,6 +50,8 @@ let gMegaHint
 
 function onInitGame() {
     gGame.isOn = false
+    gMegaHintFirstCell = null
+    gMegaHintSecondCell = null
     setMegaHint(1)
     if (gTimerInterval) stopTimer()
     resetMines(gMineLocs)
@@ -118,6 +121,20 @@ function onToggleDarkMode() {
 function onToggleMegaHintMode() {
     if (!gMegaHint) return
     gIsMegaHintMode = !gIsMegaHintMode
+}
+
+function onExterminateMines() {
+    if (!gGame.isOn) return
+    for (let i = 0; i < MINE_EXTERMINATOR_AMOUNT; i++) {
+        if (!gMineLocs.length) return
+        const cellLoc = gMineLocs.pop()
+        console.log(cellLoc)
+        gBoard[cellLoc.i][cellLoc.j].isMine = false
+        gBoard[cellLoc.i][cellLoc.j].isShown = true
+        setMinesAroundCount(gBoard)
+        renderCell(cellLoc.i, cellLoc.j)
+        if (checkWin()) return onWin()
+    }
 }
 
 function onMine() {
@@ -261,10 +278,8 @@ function revealCellNeigh(rowIdx, colIdx) {
 }
 
 function megaHintMode(location) {
-    console.log(location)
     if (!gMegaHintFirstCell) return gMegaHintFirstCell = location
     if (!gMegaHintSecondCell) gMegaHintSecondCell = location
-    console.log(gMegaHintFirstCell, gMegaHintSecondCell)
     if (gMegaHintFirstCell && gMegaHintSecondCell) {
         for (let i = gMegaHintFirstCell.i; i <= gMegaHintSecondCell.i; i++) {
             for (let j = gMegaHintFirstCell.j; j <= gMegaHintSecondCell.j; j++) {
