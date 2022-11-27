@@ -39,12 +39,17 @@ let gBoard
 let gLevel = gLevels[0]
 let gIsHintMode = false
 let gIsPlaceMinesMode = false
+let gIsMegaHintMode = false
+let gMegaHintFirstCell
+let gMegaHintSecondCell
 let gTime
 let gTimerInterval
+let gMegaHint
 
 
 function onInitGame() {
     gGame.isOn = false
+    setMegaHint(1)
     if (gTimerInterval) stopTimer()
     resetMines(gMineLocs)
     setPlayer()
@@ -64,6 +69,7 @@ function onReset() {
 function onCellClicked(i, j) {
     if (gIsPlaceMinesMode) return placeMine(i, j)
     if (!gGame.isOn) onFirstClick(i, j)
+    if (gIsMegaHintMode) return megaHintMode({ i, j })
     gBoardsHistory.push(getCopiedMat(gBoard))
     const cell = gBoard[i][j]
     if (cell.isShown) return
@@ -117,31 +123,6 @@ function onTogglePlaceMinesMode() {
     gIsPlaceMinesMode = !gIsPlaceMinesMode
 }
 
-function onWin() {
-    if (!gGame.isOn) return
-    gGame.isOn = false
-    stopTimer()
-    renderSmiley(SMILEY_WIN)
-    revealAllMines(gBoard)
-    const scorePoints = calcScorePoints(gTime, gBoard.length ** 2, gPlayer.life, gPlayer.hint)
-    setTimeout(() => {
-        const score = makeScore(scorePoints, gLevel.name)
-        gScores.push(score)
-        onShowModal(true, `Victory! your score is ${scorePoints}`)
-        saveToLocalSorage(gScores, STORAGE_KEY)
-    }, 1000)
-}
-
-function onLose() {
-    gGame.isOn = false
-    stopTimer()
-    renderSmiley(SMILEY_LOSE)
-    revealAllMines(gBoard)
-    setTimeout(() => {
-        onShowModal(true, 'You lost')
-    }, 1000)
-}
-
 function onShowModal(isOpen = false, message = '') {
     const elModal = document.querySelector('.message-modal')
     const elMessage = elModal.querySelector('.message')
@@ -175,6 +156,35 @@ function onUndo() {
 
 function onToggleDarkMode() {
     document.querySelector('body').classList.toggle('darkmode')
+}
+
+function onToggleMegaHintMode() {
+    gIsMegaHintMode = !gIsMegaHintMode
+}
+
+function onWin() {
+    if (!gGame.isOn) return
+    gGame.isOn = false
+    stopTimer()
+    renderSmiley(SMILEY_WIN)
+    revealAllMines(gBoard)
+    const scorePoints = calcScorePoints(gTime, gBoard.length ** 2, gPlayer.life, gPlayer.hint)
+    setTimeout(() => {
+        const score = makeScore(scorePoints, gLevel.name)
+        gScores.push(score)
+        onShowModal(true, `Victory! your score is ${scorePoints}`)
+        saveToLocalSorage(gScores, STORAGE_KEY)
+    }, 1000)
+}
+
+function onLose() {
+    gGame.isOn = false
+    stopTimer()
+    renderSmiley(SMILEY_LOSE)
+    revealAllMines(gBoard)
+    setTimeout(() => {
+        onShowModal(true, 'You lost')
+    }, 1000)
 }
 
 function buildBoard(size = 4) {
@@ -247,6 +257,29 @@ function revealCellNeigh(rowIdx, colIdx) {
     gIsHintMode = false
     gPlayer.hint--
     renderHints()
+}
+
+function megaHintMode(location) {
+    console.log(location)
+    if (!gMegaHintFirstCell) return gMegaHintFirstCell = location
+    if (!gMegaHintSecondCell) gMegaHintSecondCell = location
+    console.log(gMegaHintFirstCell, gMegaHintSecondCell)
+    if (gMegaHintFirstCell && gMegaHintSecondCell) {
+        for (let i = gMegaHintFirstCell.i; i <= gMegaHintSecondCell.i; i++) {
+            for (let j = gMegaHintFirstCell.j; j <= gMegaHintSecondCell.j; j++) {
+                const cell = gBoard[i][j]
+                if (!cell.isShown) cell.isShown = true
+                renderCell(i, j)
+                setTimeout(() => {
+                    cell.isShown = false
+                    renderCell(i, j)
+                }, 2000)
+            }
+
+        }
+        gIsMegaHintMode = false
+        gMegaHint--
+    }
 }
 
 function toggleHintMode() {
@@ -325,7 +358,7 @@ function onSetSevenBoomModeMines() {
             idx++
             if (idx % 7 === 0) {
                 gBoard[i][j].isMine = true
-                gMineLocs.push({i, j})
+                gMineLocs.push({ i, j })
             }
         }
     }
@@ -341,6 +374,10 @@ function setPlayer() {
         hint: 3,
         score: 0
     }
+}
+
+function setMegaHint(value) {
+    gMegaHint = value
 }
 
 function getNeigCount(rowIdx, colIdx, board) {
