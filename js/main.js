@@ -217,6 +217,7 @@ function onSetSevenBoomModeMines() {
             }
         }
     }
+    displayMessage('7 Boom mode active')
 }
 
 function buildBoard(size = 4) {
@@ -312,6 +313,11 @@ function megaHintMode(location) {
         gIsMegaHintMode = false
         gMegaHint--
     }
+}
+
+function displayMessage(message) {
+    onShowModal(true, message)
+    setTimeout(()=>onShowModal(), 1500)
 }
 
 function toggleHintMode() {
@@ -472,7 +478,7 @@ function renderBoard(board) {
                 else if (minesAroundCount === 2) className = 'orange'
                 else className = 'red'
             }
-            strHTML += `<td onclick="onCellClicked(${i},${j})" oncontextmenu="onMark(event, ${i},${j})" class="flex column cell cell-${i}-${j}">
+            strHTML += `<td title="cell-${i}-${j}" onclick="onCellClicked(${i},${j})" oncontextmenu="onMark(event, ${i},${j})" class="flex column cell cell-${i}-${j}">
             <span class="${className}">${content}</span>
             </td>`
         }
@@ -500,7 +506,7 @@ function renderHints() {
     const elHints = document.querySelector('.hints')
     let strHTML = ''
     for (let i = gPlayer.hint; i > 0; i--) {
-        strHTML += `<li class="hint" onclick="onHint()">${HINT}</li>`
+        strHTML += `<li title="Use hint" class="hint" onclick="onHint()">${HINT}</li>`
     }
     elHints.innerHTML = strHTML
 }
