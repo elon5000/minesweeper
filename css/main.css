@@ -83,7 +83,8 @@ body {
 }
 
 header {
-    flex: 0.16;
+    flex: 0.08;
+    margin-bottom: 1vh;
     align-items: center;
     justify-content: center;
     color: rgb(210, 201, 218);
@@ -181,8 +182,7 @@ header {
 }
 
 .level-picker-container {
-    height: 8vh;
-    padding: 1vh 0;
+    height: 7vh;
     justify-content: space-around;
 }
 
@@ -207,7 +207,7 @@ main {
     flex: 1;
     width: 100%;
     align-items: center;
-    justify-content: center;
+    justify-content: space-around;
 }
 
 .scores-modal-warpper {
@@ -260,9 +260,30 @@ main {
 }
 
 .life-container {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     align-items: center;
     justify-content: center;
+}
+
+.features-btns-container {
+    flex: 0.15;
+    justify-content: space-between;
+}
+
+.btn-container {
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-container > * {
+    flex: 1;
+    width: 14vw;
+    padding: 4px;
+    font-weight: 600;
+    text-align: center;
+    font-size: 0.8rem;
+    border-radius: 8px;
 }
 
 .smiley-container {
@@ -271,7 +292,6 @@ main {
 }
 
 .smiley {
-    padding: 8px;
     font-size: 2rem;
     cursor: pointer;
     border-radius: 50%;
@@ -282,7 +302,7 @@ main {
 }
 
 table {
-    height: 50vh;
+    flex: 1;
     text-align: center;
     border-radius: 6px;
     box-shadow: 4px 4px 2px rgb(0, 0, 0);
@@ -323,7 +343,8 @@ td:active {
 }
 
 footer {
-    flex: 0.08;
+    flex: 0.04;
+    margin-top: 1vh;
     align-items: center;
     justify-content: center;
     background: rgb(67, 29, 105);
