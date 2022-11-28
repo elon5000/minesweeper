@@ -176,6 +176,7 @@ function onSafeClick() {
 }
 
 function onUndo() {
+    if (!gGame.isOn) return
     gBoard = gBoardsHistory.pop()
     renderBoard(gBoard)
 }
@@ -203,6 +204,19 @@ function onLose() {
     setTimeout(() => {
         onShowModal(true, 'You lost')
     }, 1000)
+}
+
+function onSetSevenBoomModeMines() {
+    let idx = 0
+    for (let i = 0; i < gBoard.length; i++) {
+        for (let j = 0; j < gBoard[i].length; j++) {
+            idx++
+            if (idx % 7 === 0) {
+                gBoard[i][j].isMine = true
+                gMineLocs.push({ i, j })
+            }
+        }
+    }
 }
 
 function buildBoard(size = 4) {
@@ -284,14 +298,16 @@ function megaHintMode(location) {
         for (let i = gMegaHintFirstCell.i; i <= gMegaHintSecondCell.i; i++) {
             for (let j = gMegaHintFirstCell.j; j <= gMegaHintSecondCell.j; j++) {
                 const cell = gBoard[i][j]
-                if (!cell.isShown) cell.isShown = true
-                renderCell(i, j)
-                setTimeout(() => {
-                    cell.isShown = false
+                if (cell.isShown) continue
+                else {
+                    cell.isShown = true
                     renderCell(i, j)
-                }, 2000)
+                    setTimeout(() => {
+                        cell.isShown = false
+                        renderCell(i, j)
+                    }, 2000)
+                }
             }
-
         }
         gIsMegaHintMode = false
         gMegaHint--
@@ -326,7 +342,7 @@ function placeMine(i, j) {
 }
 
 function calcScorePoints(time, cellCount, life, hintCount) {
-    return Math.floor((cellCount + (life * 2) + (hintCount * 3)) / time * 100)
+    return Math.floor(((cellCount * 4) + (life * 2) + (hintCount * 3)) / time * 100)
 }
 
 function checkWin(board) {
@@ -363,19 +379,6 @@ function setMinesAroundCount(board) {
             const cell = board[i][j]
             if (cell.isMine) continue
             cell.minesAroundCount = getNeigCount(i, j, board)
-        }
-    }
-}
-
-function onSetSevenBoomModeMines() {
-    let idx = 0
-    for (let i = 0; i < gBoard.length; i++) {
-        for (let j = 0; j < gBoard[i].length; j++) {
-            idx++
-            if (idx % 7 === 0) {
-                gBoard[i][j].isMine = true
-                gMineLocs.push({ i, j })
-            }
         }
     }
 }
@@ -484,6 +487,7 @@ function renderLife() {
     for (let i = gPlayer.life; i > 0; i--) {
         strHTML += LIFE
     }
+    elLifeCounter.title = gPlayer.life
     elLifeCounter.innerText = strHTML
 }
 
@@ -511,10 +515,10 @@ function renderScores(scores) {
     let strHTML = ''
     for (let i = 0; i < scores.length; i++) {
         const score = scores[i]
-        strHTML += `<li class="flex row scre">
-    <span>${score.playerName}</span>
-    <span>${score.levelName}</span>
-    <span>${score.scorePoints}</span>
+        strHTML += `<li class="flex row score">
+    <span title=${score.playerName}>${score.playerName}</span>
+    <span title=${score.levelName}>${score.levelName}</span>
+    <span title=${score.scorePoints}>${score.scorePoints}</span>
     </li>`
     }
     elScores.innerHTML = strHTML

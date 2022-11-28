@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -7,18 +8,21 @@
     <title>Minesweeper</title>
     <link rel="stylesheet" href="css/main.css">
 </head>
+
 <body class="flex column full-layout" onload="onInitGame()">
-    <header class="flex row">
-        <div class="flex column logo-contianer">
-            <h3 class="logo">Minesweeper</h3>
-        </div>
-        <div class="flex row header-btn-container">
-            <button class="toggle-scores-btn" onclick="onToggleScoresModal()">🏆</button>
-            <button class="toggle-darkmode-btn" onclick="onToggleDarkMode()">🌗</button>
+    <header class="flex column full-layout">
+        <div class="flex row main-layout header-container">
+            <div class="flex column logo-contianer">
+                <h3 title="Minesweeper" class="logo" onclick="onReset()">Minesweeper</h3>
+            </div>
+            <div class="flex row header-btn-container">
+                <button title="Toggle scores list" class="header-btn toggle-scores-btn" onclick="onToggleScoresModal()">🏆</button>
+                <button title="Toggle darkmode" class="header-btn toggle-darkmode-btn" onclick="onToggleDarkMode()">🌗</button>
+            </div>
         </div>
     </header>
-    <section class="hidden flex fixed scores-modal-warpper">
-        <button onclick="onToggleScoresModal()">✕</button>
+    <section class="flex column fixed hidden scores-modal-warpper">
+        <button title="Close scores list" class="absolute close-modal-btn" onclick="onToggleScoresModal()">✕</button>
         <div class="flex column main-layout scores-modal">
             <ul class="scores"></ul>
         </div>
@@ -29,12 +33,12 @@
         <button class="reset-btn" onclick="onReset()">(Reset)</button>
     </section>
     <section class="flex row main-layout level-picker-container">
-        <button onclick="onSetLevel(0)" class="level-picker-btn">Easy</button>
-        <button onclick="onSetLevel(1)" class="level-picker-btn">Medium</button>
-        <button onclick="onSetLevel(2)" class="level-picker-btn">Hard</button>
+        <button title="Easy difficulty" onclick="onSetLevel(0)" class="level-picker-btn">Easy</button>
+        <button title="Medium difficulty" onclick="onSetLevel(1)" class="level-picker-btn">Medium</button>
+        <button title="Hard difficulty" onclick="onSetLevel(2)" class="level-picker-btn">Hard</button>
     </section>
     <section class="flex column stats-container">
-        <div class="life-container">
+        <div title="life" class="flex row life-container">
             Life : <span class="life-counter"></span>
         </div>
     </section>
@@ -72,10 +76,11 @@
             <tbody class="flex column game-board"></tbody>
         </table>
     </main>
-    <footer class="flex column">
-        <h3>Cofferights Elon Barzani 2022©</h3>
+    <footer class="flex column full-layout">
+        <h3 class="main-layout copyright">Cofferights Elon Barzani 2022©</h3>
     </footer>
     <script src="js/util.js"></script>
     <script src="js/main.js"></script>
 </body>
+
 </html>
